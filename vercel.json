@@ -1,5 +1,3 @@
 {
-  "builds": [{"src": "core/wsgi.py", "use": "@vercel/python"}],
-  "routes": [{"src": "/(.*)", "dest": "core/wsgi.py"}],
-  "buildCommand": "python manage.py collectstatic --noinput"
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
