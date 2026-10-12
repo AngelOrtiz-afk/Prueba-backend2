@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'admin/css/tiendita.css' %}">{% endblock %}
+{% block extrahead %}{{ block.super }}<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const actionOption = document.querySelector("#changelist-form select[name='action'] option[value='']");
+    if (actionOption) {
+        actionOption.textContent = "- Seleccione una opci\u00f3n -";
+    }
+});
+</script>{% endblock %}
+{% block branding %}<h1 id="site-name"><a href="{% url 'admin:index' %}">La Tiendita</a></h1>{% endblock %}

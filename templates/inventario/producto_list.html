@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block content %}<h1>Productos</h1>
+<a class="btn btn-primary mb-3" href="{% url 'inventario:producto-create' %}">Nuevo producto</a>
+<a class="btn btn-secondary mb-3" href="{% url 'inventario:venta-list' %}">Ventas</a>
+<form class="mb-3"><input name="q" value="{{ request.GET.q }}" placeholder="Buscar"><select name="estado"><option value="todos" {% if request.GET.estado == "todos" or not request.GET.estado %}selected{% endif %}>Todos</option><option value="activos" {% if request.GET.estado == "activos" %}selected{% endif %}>Activos</option><option value="inactivos" {% if request.GET.estado == "inactivos" %}selected{% endif %}>Inactivos</option></select><button>Buscar</button></form>
+<table class="table"><tr><th>Nombre</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr>
+{% for producto in productos %}<tr><td><a href="{% url 'inventario:producto-detail' producto.pk %}">{{ producto.nombre }}</a></td><td>{{ producto.precio }}</td><td>{{ producto.stock }}</td><td>{% if producto.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</td><td><a href="{% url 'inventario:producto-update' producto.pk %}">Editar</a></td></tr>{% empty %}<tr><td colspan="5">No hay productos.</td></tr>{% endfor %}</table>
+{% include "inventario/pagination.html" %}{% endblock %}

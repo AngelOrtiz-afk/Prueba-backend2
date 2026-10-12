@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block content %}<h1>{{ producto.nombre }}</h1><p>{{ producto.descripcion }}</p><p>Precio: {{ producto.precio }} | Stock: {{ producto.stock }}</p><p>Estado: {% if producto.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</p>
+<a href="{% url 'inventario:producto-update' producto.pk %}">Editar</a>{% endblock %}

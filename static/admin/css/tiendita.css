@@ -1,0 +1,4 @@
+#header { background: #0d6efd; }
+#branding h1, #branding h1 a:link, #branding h1 a:visited { color: #fff; }
+#site-name a::before { content: "🛒 "; }
+#nav-sidebar .addlink { display: none; }
