@@ -1,4 +1,205 @@
-#header { background: #0d6efd; }
+:root {
+    --page-max: 1000px;
+}
+
+#header {
+    align-items: center;
+    background: #264b5d;
+    box-sizing: border-box;
+    display: flex;
+    float: none;
+    justify-content: space-between;
+    margin: 0;
+    max-width: none;
+    padding: 0 max(1rem, calc((100% - var(--page-max)) / 2));
+    width: 100%;
+}
 #branding h1, #branding h1 a:link, #branding h1 a:visited { color: #fff; }
 #site-name a::before { content: "🛒 "; }
 #nav-sidebar .addlink { display: none; }
+
+#main {
+    box-sizing: border-box;
+    margin: 0 auto;
+    max-width: var(--page-max);
+    width: 100%;
+}
+
+#content,
+.breadcrumbs {
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: var(--page-max);
+    width: 100%;
+}
+
+#content {
+    min-width: 0;
+}
+
+#content-main,
+#content-related {
+    box-sizing: border-box;
+}
+
+#content-main {
+    width: 100%;
+}
+
+#changelist .results {
+    overflow-x: visible;
+}
+
+#result_list {
+    table-layout: auto;
+    width: 100%;
+}
+
+#result_list th,
+#result_list td {
+    padding: 12px 10px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+#result_list thead th {
+    font-size: .8rem;
+    padding-bottom: .6rem;
+    padding-top: .6rem;
+}
+
+#result_list tbody td,
+#result_list tbody th {
+    font-size: 1rem;
+}
+
+#changelist-filter {
+    width: 220px;
+}
+
+.dashboard #content {
+    align-items: flex-start;
+    display: flex;
+    gap: 24px;
+}
+
+.dashboard #content-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.dashboard #content-related {
+    float: none;
+    margin-left: 0;
+    width: 320px;
+}
+
+#content-main > h1 {
+    font-size: 2rem;
+}
+
+#content-main .module {
+    font-size: 1rem;
+}
+
+#content-main .module caption {
+    color: inherit;
+    cursor: default;
+    font-size: 1rem;
+    letter-spacing: .04em;
+    padding: .75rem 1rem;
+    text-transform: uppercase;
+}
+
+#content-main .module th,
+#content-main .module td {
+    padding: .875rem 1rem;
+}
+
+#content-main .module th {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+#content-main .module td a {
+    font-size: 1rem;
+}
+
+#content-main .module td a::before {
+    font-size: 1.1em;
+}
+
+#content-related {
+    float: right;
+    font-size: 1rem;
+    margin-left: auto;
+    width: 340px;
+}
+
+#content-related h2 {
+    font-size: 1.4rem;
+}
+
+#content-related h3 {
+    font-size: 1.1rem;
+}
+
+#content-related .actionlist {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+#content-related .actionlist li {
+    margin-bottom: .75rem;
+}
+
+#content-related .actionlist .mini {
+    color: #8b969e;
+    font-size: .9rem;
+}
+
+.dashboard #content-related h3 {
+    font-size: 1.1rem;
+}
+
+#branding,
+#user-tools {
+    float: none;
+    margin: 0;
+}
+
+#user-tools {
+    text-align: right;
+}
+
+@media (max-width: 1020px) {
+    #header {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 767px) {
+    #content,
+    .breadcrumbs {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    #main {
+        overflow-x: hidden;
+    }
+
+}
+
+@media (max-width: 900px) {
+    .dashboard #content {
+        display: block;
+    }
+
+    .dashboard #content-related {
+        margin-top: 24px;
+        width: auto;
+    }
+}

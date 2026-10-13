@@ -9,11 +9,21 @@ from django.http import QueryDict
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from .templatetags.formato import clp, miles
 
 from .admin import StockRangeFilter, exportar_productos_csv
-from .forms import DetalleVentaForm, ProductoForm, VentaForm
+from .forms import DetalleVentaForm, DetalleVentaFormSet, ProductoForm, VentaForm
 from .models import Producto
 from ventas.models import DetalleVenta, Venta
+
+
+class FormatoTemplateFilterTest(TestCase):
+	def test_miles(self):
+		for value, expected in ((0, "0"), (999, "999"), (1000, "1.000"), (1234567, "1.234.567")):
+			self.assertEqual(miles(value), expected)
+
+	def test_clp(self):
+		self.assertEqual(clp(1234567), "$1.234.567")
 
 
 class ProductoAdminTest(TestCase):
@@ -91,6 +101,59 @@ class VentaTest(TestCase):
 	def test_rechaza_stock_insuficiente(self):
 		with self.assertRaises(ValidationError):
 			DetalleVenta.objects.create(venta=self.venta, producto=self.producto, cantidad=11)
+
+	def test_editar_cantidad_sin_aumentarla_considera_stock_vendido(self):
+		detalle = DetalleVenta.objects.create(venta=self.venta, producto=self.producto, cantidad=3)
+		self.producto.refresh_from_db()
+		self.producto.stock = 2
+		self.producto.save(update_fields=("stock",))
+
+		detalle.cantidad = 3
+		detalle.full_clean()
+
+	def test_editar_cantidad_por_encima_de_stock_y_vendido_falla(self):
+		detalle = DetalleVenta.objects.create(venta=self.venta, producto=self.producto, cantidad=3)
+		detalle.cantidad = 11
+
+		with self.assertRaisesMessage(ValidationError, "La cantidad supera el stock disponible."):
+			detalle.full_clean()
+
+	def test_cambiar_producto_repone_anterior_y_descuenta_nuevo(self):
+		nuevo = Producto.objects.create(nombre="Leche", precio=500, stock=8)
+		detalle = DetalleVenta.objects.create(venta=self.venta, producto=self.producto, cantidad=3)
+
+		detalle.producto = nuevo
+		detalle.save()
+		self.producto.refresh_from_db()
+		nuevo.refresh_from_db()
+
+		self.assertEqual(self.producto.stock, 10)
+		self.assertEqual(nuevo.stock, 5)
+
+	def test_formset_rechaza_venta_sin_lineas(self):
+		formset = DetalleVentaFormSet(
+			data={
+			    "detalles-TOTAL_FORMS": "1",
+			    "detalles-INITIAL_FORMS": "0",
+			    "detalles-MIN_NUM_FORMS": "1",
+			    "detalles-MAX_NUM_FORMS": "1000",
+			    "detalles-0-producto": "",
+			    "detalles-0-cantidad": "",
+			    "detalles-0-precio_unitario": "",
+			},
+			instance=self.venta,
+		)
+
+		self.assertFalse(formset.is_valid())
+		self.assertIn("Agrega al menos un producto a la venta.", formset.non_form_errors())
+
+	def test_eliminar_venta_por_queryset_repone_stock(self):
+		detalle = DetalleVenta.objects.create(venta=self.venta, producto=self.producto, cantidad=3)
+		Venta.objects.filter(pk=self.venta.pk).delete()
+
+		self.producto.refresh_from_db()
+		self.assertEqual(self.producto.stock, 10)
+		self.assertFalse(DetalleVenta.objects.filter(pk=detalle.pk).exists())
 
 	def test_reporte_por_rango(self):
 		Venta.objects.create(cliente="Fuera", fecha=timezone.now() - timezone.timedelta(days=5))

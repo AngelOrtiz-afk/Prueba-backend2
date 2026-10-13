@@ -6,9 +6,13 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
 
-from .forms import DetalleVentaForm
+from .forms import DetalleVentaBaseFormSet, DetalleVentaForm
 from .models import Producto
 from ventas.models import DetalleVenta, Venta
+
+
+def formato_miles(value):
+    return f"{value:,}".replace(",", ".")
 
 # Register your models here.
 
@@ -57,12 +61,20 @@ def exportar_productos_csv(modeladmin, request, queryset):
 
 
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "precio", "stock", "activo")
+    list_display = ("nombre", "precio_formateado", "stock_formateado", "activo")
     search_fields = ("nombre",)
     list_filter = ("activo", StockRangeFilter)
     actions = (exportar_productos_csv,)
     ordering = ("nombre", "stock")
     search_fields = ("nombre", "descripcion")
+
+    @admin.display(ordering="precio", description="Precio")
+    def precio_formateado(self, obj):
+        return f"${formato_miles(obj.precio)}"
+
+    @admin.display(ordering="stock", description="Stock")
+    def stock_formateado(self, obj):
+        return formato_miles(obj.stock)
 
     def get_search_results(self, request, queryset, search_term):
         queryset, may_have_duplicates = super().get_search_results(request, queryset, search_term)
@@ -76,6 +88,9 @@ admin.site.register(model_or_iterable=Producto, admin_class=ProductoAdmin)
 class DetalleVentaInline(admin.TabularInline):
     model = DetalleVenta
     form = DetalleVentaForm
+    formset = DetalleVentaBaseFormSet
+    min_num = 1
+    validate_min = True
     extra = 1
     autocomplete_fields = ("producto",)
 
@@ -99,12 +114,16 @@ def exportar_ventas_csv(modeladmin, request, queryset):
 class VentaAdmin(admin.ModelAdmin):
     inlines = (DetalleVentaInline,)
     readonly_fields = ("total",)
-    list_display = ("id", "fecha", "cliente", "total")
+    list_display = ("id", "fecha", "cliente", "total_formateado")
     list_filter = (("fecha", admin.DateFieldListFilter),)
     date_hierarchy = "fecha"
     search_fields = ("cliente", "id")
     actions = (exportar_ventas_csv,)
     change_list_template = "admin/ventas/venta/change_list.html"
+
+    @admin.display(ordering="total", description="Total")
+    def total_formateado(self, obj):
+        return f"${formato_miles(obj.total)}"
 
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

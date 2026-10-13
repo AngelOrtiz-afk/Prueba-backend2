@@ -1,2 +1,11 @@
-{% extends "base.html" %}{% block content %}<h1>{{ producto.nombre }}</h1><p>{{ producto.descripcion }}</p><p>Precio: {{ producto.precio }} | Stock: {{ producto.stock }}</p><p>Estado: {% if producto.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</p>
-<a href="{% url 'inventario:producto-update' producto.pk %}">Editar</a>{% endblock %}
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}{{ producto.nombre }} · La Tiendita{% endblock %}
+{% block content %}
+<div class="card form-card shadow-sm"><div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-start gap-3"><h1 class="h4">{{ producto.nombre }}</h1>{% if producto.activo %}<span class="badge text-bg-success">Activo</span>{% else %}<span class="badge text-bg-secondary">Inactivo</span>{% endif %}</div>
+    <p class="text-secondary">{{ producto.descripcion|default:"Sin descripción." }}</p>
+    <dl class="row"><dt class="col-6">Precio</dt><dd class="col-6 text-end">{{ producto.precio|clp }}</dd><dt class="col-6">Stock</dt><dd class="col-6 text-end">{{ producto.stock|miles }}</dd></dl>
+    <div class="d-flex justify-content-between mt-4"><a class="btn btn-outline-secondary" href="{% url 'inventario:producto-list' %}">Volver</a><a class="btn btn-outline-info" href="{% url 'inventario:producto-update' producto.pk %}">Editar</a></div>
+</div></div>
+{% endblock %}

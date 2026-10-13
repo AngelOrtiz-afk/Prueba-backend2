@@ -42,18 +42,31 @@ class DetalleVenta(models.Model):
             anterior = self.__class__.objects.filter(pk=self.pk).only("producto_id").first() if self.pk else None
             if not anterior or anterior.producto_id != self.producto_id:
                 raise ValidationError("El producto está inactivo y no se puede vender.")
-        if self.producto_id and self._state.adding and self.cantidad > self.producto.stock:
-            raise ValidationError({"cantidad": "La cantidad supera el stock disponible."})
+        if self.producto_id:
+            stock_disponible = Producto.objects.only("stock").get(pk=self.producto_id).stock
+            anterior = self.__class__.objects.filter(pk=self.pk).only("producto_id", "cantidad").first() if self.pk else None
+            if anterior and anterior.producto_id == self.producto_id:
+                stock_disponible += anterior.cantidad
+            if self.cantidad > stock_disponible:
+                raise ValidationError({"cantidad": "La cantidad supera el stock disponible."})
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
             if self.precio_unitario is None:
                 self.precio_unitario = self.producto.precio
             anterior = self.__class__.objects.select_for_update().get(pk=self.pk) if self.pk else None
-            diferencia = self.cantidad - anterior.cantidad if anterior else self.cantidad
+            if anterior and anterior.producto_id != self.producto_id:
+                producto_anterior = Producto.objects.select_for_update().get(pk=anterior.producto_id)
+                producto_anterior.stock += anterior.cantidad
+                producto_anterior.save(update_fields=("stock",))
+
             producto = Producto.objects.select_for_update().get(pk=self.producto_id)
             if not producto.activo and (not anterior or anterior.producto_id != self.producto_id):
                 raise ValidationError("El producto está inactivo y no se puede vender.")
+            if anterior and anterior.producto_id == self.producto_id:
+                diferencia = self.cantidad - anterior.cantidad
+            else:
+                diferencia = self.cantidad
             if diferencia > producto.stock:
                 raise ValidationError("La cantidad supera el stock disponible.")
             producto.stock -= diferencia

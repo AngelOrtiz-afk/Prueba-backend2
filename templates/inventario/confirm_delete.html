@@ -1,4 +1,8 @@
-{% extends "base.html" %}{% block content %}<h1>Confirmar eliminación</h1>
-<p>¿Eliminar {{ object }}?</p>
-<form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Confirmar</button> <a class="btn btn-secondary" href="{{ cancel_url }}">Cancelar</a></form>
+{% extends "base.html" %}
+{% block title %}Confirmar eliminación · La Tiendita{% endblock %}
+{% block content %}
+<div class="card form-card shadow-sm"><div class="card-body p-4 text-center">
+    <h1 class="h4 mb-3">Confirmar eliminación</h1><p class="text-secondary">¿Eliminar {{ object }}?</p>
+    <form method="post" class="d-flex justify-content-center gap-2 mt-4">{% csrf_token %}<button class="btn btn-danger" type="submit">Confirmar</button><a class="btn btn-outline-secondary" href="{{ cancel_url }}">Cancelar</a></form>
+</div></div>
 {% endblock %}

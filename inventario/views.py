@@ -180,8 +180,6 @@ class VentaDeleteView(LoginRequiredMixin, DeleteView):
     def form_valid(self, form):
         venta_pk = self.object.pk
         with transaction.atomic():
-            for detalle in list(self.object.detalles.all()):
-                detalle.delete()
             response = super().form_valid(form)
         logger.info("Venta %s anulada", venta_pk)
         messages.success(self.request, "Venta anulada y stock repuesto.")

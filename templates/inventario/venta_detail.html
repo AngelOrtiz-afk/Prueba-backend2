@@ -1,1 +1,10 @@
-{% extends "base.html" %}{% block content %}<h1>Venta #{{ venta.pk }}</h1><p>{{ venta.fecha }} - {{ venta.cliente }}</p><ul>{% for detalle in venta.detalles.all %}<li>{{ detalle.producto }}: {{ detalle.cantidad }} x {{ detalle.precio_unitario }} = {{ detalle.subtotal }}</li>{% endfor %}</ul><h3>Total: {{ venta.total }}</h3><a href="{% url 'inventario:venta-update' venta.pk %}">Editar</a> | <a href="{% url 'inventario:venta-delete' venta.pk %}">Eliminar</a>{% endblock %}
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}Venta #{{ venta.pk }} · La Tiendita{% endblock %}
+{% block content %}
+<div class="card shadow-sm"><div class="card-body p-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3"><div><h1 class="h4 mb-1">Venta #{{ venta.pk|miles }}</h1><p class="text-secondary mb-0">{{ venta.fecha }}{% if venta.cliente %} · {{ venta.cliente }}{% endif %}</p></div><span class="summary-total">{{ venta.total|clp }}</span></div>
+    <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Producto</th><th>Cantidad</th><th>Precio unitario</th><th class="text-end">Subtotal</th></tr></thead><tbody>{% for detalle in venta.detalles.all %}<tr><td>{{ detalle.producto }}</td><td>{{ detalle.cantidad|miles }}</td><td>{{ detalle.precio_unitario|clp }}</td><td class="text-end">{{ detalle.subtotal|clp }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-secondary py-4">No hay registros</td></tr>{% endfor %}</tbody></table></div>
+    <div class="d-flex justify-content-between mt-4"><a class="btn btn-outline-secondary" href="{% url 'inventario:venta-list' %}">Volver</a><div class="d-flex gap-2"><a class="btn btn-outline-danger" href="{% url 'inventario:venta-delete' venta.pk %}">Eliminar</a><a class="btn btn-outline-info" href="{% url 'inventario:venta-update' venta.pk %}">Editar</a></div></div>
+</div></div>
+{% endblock %}

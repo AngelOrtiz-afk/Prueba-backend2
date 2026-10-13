@@ -7,6 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (actionOption) {
         actionOption.textContent = "- Seleccione una opci\u00f3n -";
     }
-});
+});     
 </script>{% endblock %}
-{% block branding %}<h1 id="site-name"><a href="{% url 'admin:index' %}">La Tiendita</a></h1>{% endblock %}
+{% block branding %}<h1 id="site-name"><a href="{% url 'inventario:producto-list' %}">La Tiendita</a></h1>{% endblock %}

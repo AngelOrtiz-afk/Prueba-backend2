@@ -1,1 +1,40 @@
-{% extends "base.html" %}{% block content %}<h1>Venta</h1><form method="post">{% csrf_token %}{{ form.as_p }}{{ formset.management_form }}{% for detalle in formset %}<div class="border p-2 mb-2">{{ detalle.as_p }}</div>{% endfor %}<button class="btn btn-primary">Guardar venta</button>{% if object %} <a class="btn btn-outline-danger" href="{% url 'inventario:venta-delete' object.pk %}">Eliminar</a>{% endif %}</form>{% endblock %}
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}{% if object %}Editar venta{% else %}Nueva venta{% endif %} · La Tiendita{% endblock %}
+{% block content %}
+<div class="card form-card shadow-sm"><div class="card-body p-4">
+    <h1 class="h4 mb-3">{% if object %}Editar venta{% else %}Nueva venta{% endif %}</h1>
+    <form method="post" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+            {% for field in form %}
+            <div class="col-md-6">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.errors %}{{ field|add_class:"form-control is-invalid" }}{% else %}{{ field|add_class:"form-control" }}{% endif %}
+                {{ field|field_errors }}
+            </div>
+            {% endfor %}
+        </div>
+        {{ formset.management_form }}
+        <h2 class="h6 border-bottom pb-2 mt-4 mb-2">Detalle de venta</h2>
+        {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Producto</th><th>Cantidad</th><th>Eliminar</th></tr></thead>
+                <tbody>{% for detalle in formset %}
+                <tr>
+                    <td>{% if detalle.producto.errors %}{{ detalle.producto|add_class:"form-select is-invalid" }}{% else %}{{ detalle.producto|add_class:"form-select" }}{% endif %}{{ detalle.producto|field_errors }}{{ detalle.id }}</td>
+                    <td>{% if detalle.cantidad.errors %}{{ detalle.cantidad|add_class:"form-control is-invalid" }}{% else %}{{ detalle.cantidad|add_class:"form-control" }}{% endif %}{{ detalle.cantidad|field_errors }}</td>
+                    <td>{% if detalle.DELETE %}<div class="form-check">{{ detalle.DELETE|add_class:"form-check-input" }}<label class="form-check-label" for="{{ detalle.DELETE.id_for_label }}">Quitar</label></div>{% endif %}{{ detalle.precio_unitario }}</td>
+                </tr>
+                {% endfor %}</tbody>
+            </table>
+        </div>
+        <div class="detail-summary mt-3 p-3 d-flex justify-content-between align-items-center"><span>Total</span><span class="summary-total">{{ object.total|default:"0"|clp }}</span></div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            {% if object %}<a class="btn btn-outline-danger" href="{% url 'inventario:venta-delete' object.pk %}">Eliminar</a>{% else %}<span></span>{% endif %}
+            <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{% url 'inventario:venta-list' %}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar</button></div>
+        </div>
+    </form>
+</div></div>
+{% endblock %}

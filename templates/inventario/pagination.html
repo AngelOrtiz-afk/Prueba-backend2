@@ -1,1 +1,14 @@
-{% if is_paginated %}<nav><ul class="pagination">{% if page_obj.has_previous %}<li><a href="?{{ pagination_query }}{% if pagination_query %}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a></li>{% endif %}<li class="page-item"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>{% if page_obj.has_next %}<li><a href="?{{ pagination_query }}{% if pagination_query %}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a></li>{% endif %}</ul></nav>{% endif %}
+{% if is_paginated %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4">
+    <small class="text-secondary">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</small>
+    <nav aria-label="Paginación">
+        <ul class="pagination mb-0">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{{ pagination_query }}{% if pagination_query %}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a></li>{% else %}<li class="page-item disabled"><span class="page-link">Anterior</span></li>{% endif %}
+            {% for number in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == number %}active{% endif %}"><a class="page-link" href="?{{ pagination_query }}{% if pagination_query %}&{% endif %}page={{ number }}">{{ number }}</a></li>
+            {% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{{ pagination_query }}{% if pagination_query %}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a></li>{% else %}<li class="page-item disabled"><span class="page-link">Siguiente</span></li>{% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}

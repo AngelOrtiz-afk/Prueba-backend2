@@ -1,1 +1,12 @@
-{% extends "base.html" %}{% block content %}<h1>Ingresar</h1><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary">Ingresar</button></form>{% endblock %}
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}Ingresar · La Tiendita{% endblock %}
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75"><div class="col-sm-10 col-md-7 col-lg-5"><div class="card shadow-sm"><div class="card-body p-4">
+    <h1 class="h4 text-center mb-3">Ingresar</h1>
+    <form method="post" novalidate>{% csrf_token %}{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.errors %}{{ field|add_class:"form-control is-invalid" }}{% else %}{{ field|add_class:"form-control" }}{% endif %}{{ field|field_errors }}</div>{% endfor %}
+        <button class="btn btn-primary w-100" type="submit">Ingresar</button>
+    </form>
+</div></div></div></div>
+{% endblock %}

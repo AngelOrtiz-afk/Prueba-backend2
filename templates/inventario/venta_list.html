@@ -1,3 +1,27 @@
-{% extends "base.html" %}{% block content %}<h1>Ventas</h1><a class="btn btn-primary mb-3" href="{% url 'inventario:venta-create' %}">Nueva venta</a>
-<form class="mb-3">Desde <input type="date" name="desde" value="{{ request.GET.desde }}"> Hasta <input type="date" name="hasta" value="{{ request.GET.hasta }}"><button>Filtrar</button></form>
-<table class="table"><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th><th></th></tr>{% for venta in ventas %}<tr><td><a href="{% url 'inventario:venta-detail' venta.pk %}">#{{ venta.pk }}</a></td><td>{{ venta.fecha }}</td><td>{{ venta.cliente }}</td><td>{{ venta.total }}</td><td><a href="{% url 'inventario:venta-update' venta.pk %}">Editar</a></td></tr>{% empty %}<tr><td colspan="5">No hay ventas.</td></tr>{% endfor %}</table>{% include "inventario/pagination.html" %}{% endblock %}
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}Ventas · La Tiendita{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <h1 class="h3 mb-0">Ventas</h1>
+    <a class="btn btn-primary" href="{% url 'inventario:venta-create' %}">Nueva venta</a>
+</div>
+<form class="row g-2 align-items-end mb-4">
+    <div class="col-12 col-md-5"><label class="form-label" for="sales-from">Desde</label><input id="sales-from" class="form-control" type="date" name="desde" value="{{ request.GET.desde }}"></div>
+    <div class="col-12 col-md-5"><label class="form-label" for="sales-to">Hasta</label><input id="sales-to" class="form-control" type="date" name="hasta" value="{{ request.GET.hasta }}"></div>
+    <div class="col-12 col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filtrar</button></div>
+</form>
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th><th class="text-end">Acciones</th></tr></thead>
+            <tbody>
+            {% for venta in ventas %}
+            <tr><td><a class="item-link" href="{% url 'inventario:venta-detail' venta.pk %}">#{{ venta.pk|miles }}</a></td><td>{{ venta.fecha }}</td><td>{{ venta.cliente|default:"Sin cliente" }}</td><td>{{ venta.total|clp }}</td><td class="text-end"><a class="btn btn-sm btn-outline-info" href="{% url 'inventario:venta-update' venta.pk %}">Editar</a></td></tr>
+            {% empty %}<tr><td class="text-center py-5 text-secondary" colspan="5">Aún no hay ventas. <a class="item-link" href="{% url 'inventario:venta-create' %}">Crear venta</a></td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "inventario/pagination.html" %}
+{% endblock %}

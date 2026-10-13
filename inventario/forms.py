@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import inlineformset_factory
+from django.forms import BaseInlineFormSet, inlineformset_factory
 
 from .models import Producto
 from .validators import solo_letras_validator
@@ -109,6 +109,25 @@ class DetalleVentaForm(forms.ModelForm):
         return cleaned
 
 
+class DetalleVentaBaseFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if not any(
+            form.cleaned_data
+            and not form.cleaned_data.get("DELETE")
+            and not form.errors
+            for form in self.forms
+        ):
+            raise forms.ValidationError("Agrega al menos un producto a la venta.")
+
+
 DetalleVentaFormSet = inlineformset_factory(
-    Venta, DetalleVenta, form=DetalleVentaForm, extra=1, can_delete=True
+    Venta,
+    DetalleVenta,
+    form=DetalleVentaForm,
+    formset=DetalleVentaBaseFormSet,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
 )
