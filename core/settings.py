@@ -16,6 +16,7 @@ import os
 import sys
 from urllib.parse import parse_qs, urlparse
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -33,7 +34,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() in ("1", "true", "yes")
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     if DEBUG:
-        SECRET_KEY = "django-insecure-local-only-change-me"
+        SECRET_KEY = get_random_secret_key()
     else:
         raise ImproperlyConfigured("SECRET_KEY es obligatoria cuando DEBUG=False.")
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'inventario',
     'ventas',
+    "django_filters",
     "rest_framework",
 ]
 
@@ -171,6 +173,25 @@ if "test" in sys.argv:
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "inventario:producto-list"
 LOGOUT_REDIRECT_URL = "login"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ],
+}
 
 LOGGING = {
     "version": 1,
