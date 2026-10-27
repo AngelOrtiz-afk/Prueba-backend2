@@ -2,3 +2,7 @@ Django==6.1.1
 psycopg2-binary==2.9.13
 python-dotenv==1.2.3
 whitenoise==6.11.0
+
+ djangorestframework
+ markdown
+ django-filter
