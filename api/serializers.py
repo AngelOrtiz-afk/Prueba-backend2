@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -31,6 +32,15 @@ class VentaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("La venta debe incluir al menos un detalle.")
         return value
 
+    def validate(self, attrs):
+        for detail in attrs.get("detalles", []):
+            producto = detail["producto"]
+            if not producto.activo:
+                raise serializers.ValidationError(
+                    {"detalles": f"El producto {producto.pk} está inactivo y no se puede vender."}
+                )
+        return attrs
+
     @staticmethod
     def _create_details(venta, details):
         for detail in details:
@@ -40,7 +50,12 @@ class VentaSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         details = validated_data.pop("detalles")
         venta = Venta.objects.create(**validated_data)
-        self._create_details(venta, details)
+        try:
+            self._create_details(venta, details)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(
+                exc.message_dict if hasattr(exc, "message_dict") else exc.messages
+            ) from exc
         return venta
 
     @transaction.atomic
@@ -51,6 +66,12 @@ class VentaSerializer(serializers.ModelSerializer):
         instance.save(update_fields=tuple(validated_data) or None)
 
         if details is not None:
+            # Sending detalles replaces the complete list; delete() restores old stock first.
             instance.detalles.all().delete()
-            self._create_details(instance, details)
+            try:
+                self._create_details(instance, details)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError(
+                    exc.message_dict if hasattr(exc, "message_dict") else exc.messages
+                ) from exc
         return instance

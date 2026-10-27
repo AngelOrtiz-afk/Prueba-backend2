@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'inventario',
     'ventas',
+    "api",
     "django_filters",
     "rest_framework",
 ]
@@ -93,6 +94,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 database_url = os.getenv("DATABASE_URL")
+if "migrate" in sys.argv and os.getenv("DATABASE_URL_MIGRATIONS"):
+    database_url = os.getenv("DATABASE_URL_MIGRATIONS")
 if database_url:
     parsed = urlparse(database_url)
     db_config = {
@@ -116,8 +119,11 @@ else:
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
     }
-db_config["OPTIONS"] = {"sslmode": "require"}
+db_config["OPTIONS"] = {
+    "sslmode": os.getenv("DB_SSLMODE", "require"),
+}
 db_config["CONN_MAX_AGE"] = 0
+db_config["DISABLE_SERVER_SIDE_CURSORS"] = True
 DATABASES = {"default": db_config}
 
 if not DEBUG:
@@ -187,11 +193,16 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
+    "EXCEPTION_HANDLER": "api.exceptions.api_exception_handler",
 }
+if not DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = ["rest_framework.renderers.JSONRenderer"]
 
 LOGGING = {
     "version": 1,
