@@ -100,12 +100,12 @@ class DetalleVentaForm(forms.ModelForm):
         if self.cleaned_data.get("producto") and self.cleaned_data.get("cantidad"):
             detalle = DetalleVenta(
                 pk=self.instance.pk,
-                venta=self.instance.venta,
+                venta_id=self.instance.venta_id,
                 producto=cleaned["producto"],
                 cantidad=cleaned["cantidad"],
                 precio_unitario=cleaned.get("precio_unitario") or cleaned["producto"].precio,
             )
-            detalle.full_clean(exclude=("id",))
+            detalle.full_clean(exclude=("id", "venta"))
         return cleaned
 
 

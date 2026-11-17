@@ -31,7 +31,7 @@ class ProductoListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(activo=True)
         elif estado == "inactivos":
             queryset = queryset.filter(activo=False)
-        return queryset
+        return queryset.order_by("-id")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

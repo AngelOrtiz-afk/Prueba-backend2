@@ -21,17 +21,50 @@ class ApiTestCase(APITestCase):
         Producto.objects.create(nombre="Pan", descripcion="Horneado", precio=100, stock=5)
         Producto.objects.create(nombre="Leche", descripcion="Lácteo", precio=200, stock=3, activo=False)
 
-        response = self.client.get("/api/v1/productos/?activo=true&search=Pan")
+        response = self.client.get("/api/productos/?activo=true&search=Pan")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["nombre"], "Pan")
 
+    def test_producto_list_orders_newest_by_default_and_supports_name_ordering_with_jwt(self):
+        self.client.force_authenticate(user=None)
+        token_response = self.client.post(
+            "/api/token/",
+            {"username": "api-user", "password": "test-password"},
+            format="json",
+        )
+        self.assertEqual(token_response.status_code, status.HTTP_200_OK)
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {token_response.data['access']}",
+        )
+
+        created_products = []
+        for nombre in ("Zeta", "Alfa", "Beta"):
+            response = self.client.post(
+                "/api/productos/",
+                {"nombre": nombre, "precio": 100, "stock": 5},
+                format="json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            created_products.append(response.data)
+
+        response = self.client.get("/api/productos/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"][0]["id"], created_products[-1]["id"])
+
+        response = self.client.get("/api/productos/?ordering=nombre")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [producto["nombre"] for producto in response.data["results"]],
+            ["Alfa", "Beta", "Zeta"],
+        )
+
     def test_venta_creation_reuses_stock_and_total_logic(self):
         producto = Producto.objects.create(nombre="Pan", precio=100, stock=5)
 
         response = self.client.post(
-            "/api/v1/ventas/",
+            "/api/ventas/",
             {
                 "cliente": "Ana",
                 "detalles": [{"producto": producto.pk, "cantidad": 2}],
@@ -52,7 +85,7 @@ class ApiTestCase(APITestCase):
         venta = Venta.objects.create(cliente="Ana")
         DetalleVenta.objects.create(venta=venta, producto=producto, cantidad=2)
 
-        response = self.client.delete(f"/api/v1/ventas/{venta.pk}/")
+        response = self.client.delete(f"/api/ventas/{venta.pk}/")
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         producto.refresh_from_db()
@@ -61,14 +94,14 @@ class ApiTestCase(APITestCase):
     def test_unauthenticated_access_is_rejected(self):
         self.client.logout()
 
-        response = self.client.get("/api/v1/productos/")
+        response = self.client.get("/api/productos/")
 
         self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
 
     def test_insufficient_stock_and_inactive_product_return_400(self):
         producto = Producto.objects.create(nombre="Pan", precio=100, stock=1)
         response = self.client.post(
-            "/api/v1/ventas/",
+            "/api/ventas/",
             {"detalles": [{"producto": producto.pk, "cantidad": 2}]},
             format="json",
         )
@@ -78,7 +111,7 @@ class ApiTestCase(APITestCase):
         producto.activo = False
         producto.save(update_fields=("activo",))
         response = self.client.post(
-            "/api/v1/ventas/",
+            "/api/ventas/",
             {"detalles": [{"producto": producto.pk, "cantidad": 1}]},
             format="json",
         )
@@ -89,7 +122,7 @@ class ApiTestCase(APITestCase):
         venta = Venta.objects.create(cliente="Ana")
         DetalleVenta.objects.create(venta=venta, producto=producto, cantidad=1)
 
-        response = self.client.delete(f"/api/v1/productos/{producto.pk}/")
+        response = self.client.delete(f"/api/productos/{producto.pk}/")
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn("activo=false", response.data["detail"])

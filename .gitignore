@@ -59,6 +59,9 @@ cover/
 *.log
 local_settings.py
 db.sqlite3
+
+# React client environment
+tiendita-client/.env
 staticfiles/
 db.sqlite3-journal
 

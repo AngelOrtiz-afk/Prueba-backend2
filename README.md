@@ -13,19 +13,22 @@ sus rutas existentes y requiere sesión. Los estáticos se sirven con WhiteNoise
    `python manage.py createsuperuser` y arrancar con `python manage.py runserver`.
 
 El administrador está en `/admin/`; el CRUD web está en `/` y `/ventas/`.
-La API navegable usa `/api-auth/login/`.
+La API usa JWT mediante el encabezado `Authorization: Bearer <access>`.
 
 ## API REST
 
-La API versionada está bajo `/api/v1/` y exige autenticación por sesión o
-HTTP Basic. No usa JWT ni autenticación por tokens.
+La API está bajo `/api/`. Los endpoints de productos y ventas requieren un
+token JWT; `/api/health/` es público.
 
 | Método | Endpoint | Descripción |
 |---|---|---|
-| GET/POST | `/api/v1/productos/` | Listar o crear productos |
-| GET/PUT/PATCH/DELETE | `/api/v1/productos/{id}/` | Consultar, editar o eliminar producto |
-| GET/POST | `/api/v1/ventas/` | Listar o crear ventas |
-| GET/PUT/PATCH/DELETE | `/api/v1/ventas/{id}/` | Consultar, reemplazar detalles o eliminar venta |
+| POST | `/api/token/` | Obtener access y refresh tokens |
+| POST | `/api/token/refresh/` | Renovar el access token |
+| GET | `/api/health/` | Comprobar disponibilidad sin autenticación |
+| GET/POST | `/api/productos/` | Listar o crear productos |
+| GET/PUT/PATCH/DELETE | `/api/productos/{id}/` | Consultar, editar o eliminar producto |
+| GET/POST | `/api/ventas/` | Listar o crear ventas |
+| GET/PUT/PATCH/DELETE | `/api/ventas/{id}/` | Consultar, reemplazar detalles o eliminar venta |
 
 `detalles` es escribible al crear o editar una venta. Si se envía en una
 edición, reemplaza la lista completa: primero se eliminan los detalles
@@ -35,8 +38,8 @@ anteriores (su `delete()` repone stock) y después se crean los nuevos (su
 Ejemplo de creación de venta:
 
 ```http
-POST /api/v1/ventas/
-Authorization: Basic <base64(usuario:contraseña)>
+POST /api/ventas/
+Authorization: Bearer <access>
 Content-Type: application/json
 
 {
@@ -62,7 +65,7 @@ permisos usan el formato estándar de DRF.
   `ordering=-total`.
 - Paginación: `page` con 10 elementos por página.
 
-Ejemplo: `/api/v1/productos/?activo=true&precio_min=100&stock_max=20&search=pan`.
+Ejemplo: `/api/productos/?activo=true&precio_min=100&stock_max=20&search=pan`.
 
 ## Variables de entorno
 
